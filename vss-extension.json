@@ -2,7 +2,7 @@
   "manifestVersion": 1,
   "id": "azpermission-helper",
   "publisher": "local",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "name": "Permission Audit",
   "description": "Find all permissions a user or group has across the collection, with links to where each is granted.",
   "categories": ["Other"],
@@ -13,7 +13,12 @@
     {
       "id": "permission-audit-hub",
       "type": "ms.vss-web.hub",
-      "targets": ["ms.vss-admin-web.collection-admin-hub-group"],
+      "targets": [
+        "ms.vss-admin-web.collection-admin-hub-group",
+        "ms.vss-admin-web.organization-admin-hub-group",
+        "ms.vss-web.collection-admin-hub-group",
+        "ms.vss-web.account-admin-hub-group"
+      ],
       "properties": { "name": "Permission Audit", "uri": "dist/hub.html" }
     }
   ],
