@@ -4,6 +4,8 @@ Finds **all permissions** a user or group has across a collection — direct and
 inherited through (nested) group membership — with a deep link to the security
 page where each permission is granted. For Project Collection Administrators.
 
+![Permission Audit in Collection Settings](docs/demo.png)
+
 ## Features
 
 - Single search box with autocomplete over users **and** groups (USER/GROUP badges)
