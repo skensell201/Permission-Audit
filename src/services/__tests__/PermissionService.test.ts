@@ -35,6 +35,22 @@ describe('PermissionService.getNamespaces', () => {
 });
 
 describe('PermissionService.getAcesForDescriptors', () => {
+  it('chunks large descriptor sets into multiple requests', async () => {
+    const calls: string[] = [];
+    const api: ApiClient = {
+      get: <T>(path: string): Promise<T> => {
+        calls.push(path);
+        return Promise.resolve({ value: [] } as T);
+      },
+    };
+    const svc = new PermissionService(api);
+    const descriptors = Array.from({ length: 45 }, (_, i) => `d${i}`);
+    await svc.getAcesForDescriptors(GIT_NS, descriptors);
+    expect(calls).toHaveLength(3); // 20 + 20 + 5
+    expect(calls[0]).toContain('d0');
+    expect(calls[2]).toContain('d44');
+  });
+
   it('flattens acesDictionary into Ace rows', async () => {
     const api = fakeApi({
       value: [

@@ -28,6 +28,12 @@ page where each permission is granted. For Project Collection Administrators.
 4. Filter by area, project, effect, or permission name. **Export** the filtered
    list as CSV, Excel, or JSON.
 
+## Known limitations (v1)
+
+- Collections with more than 1,000 projects are truncated (no pagination yet).
+- Area/Iteration path links point to the project security page, not the node itself.
+- Tree expansion and the export menu are mouse-only (no keyboard navigation yet).
+
 ## Manual integration checklist (test server)
 
 - [ ] Search by partial user name; USER badge shown; selection works
@@ -37,3 +43,4 @@ page where each permission is granted. For Project Collection Administrators.
 - [ ] "→ open" lands on the matching security page for repo / pipeline / project
 - [ ] Export produces CSV, Excel, and JSON with the filtered rows
 - [ ] A non-admin user gets the "Project Collection Administrator" message
+- [ ] A permission under "Area paths" has its "→ open" link verified (links to project security page in v1)

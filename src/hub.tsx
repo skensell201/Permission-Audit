@@ -3,7 +3,7 @@ import 'azure-devops-ui/Core/override.css';
 import './hub.css';
 import * as SDK from 'azure-devops-extension-sdk';
 import { CommonServiceIds, ILocationService } from 'azure-devops-extension-api';
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { Identity, PermissionEntry } from './models/PermissionNode';
 import { RestApiClient, ApiError } from './services/ApiClient';
@@ -61,6 +61,7 @@ function App({ services }: { services: Services }): JSX.Element {
     [hasResults, filtered, services.collectionName]
   );
   const summary = useMemo(() => (hasResults ? summarize(filtered) : null), [hasResults, filtered]);
+  const searchIdentities = useCallback((q: string) => services.identities.search(q), [services.identities]);
   const namespaces = useMemo(() => [...new Set((entries ?? []).map((e) => e.namespaceName))].sort(), [entries]);
   const projects = useMemo(
     () => [...new Set((entries ?? []).map((e) => e.projectName).filter((p): p is string => p !== null))].sort(),
@@ -71,7 +72,7 @@ function App({ services }: { services: Services }): JSX.Element {
     <div>
       <h2>Permission Audit</h2>
       <div className="toolbar">
-        <SearchBar search={(q) => services.identities.search(q)} onSelect={setTarget} />
+        <SearchBar search={searchIdentities} onSelect={setTarget} />
         <button disabled={!target || progress !== null} onClick={runAudit}>
           Find permissions
         </button>

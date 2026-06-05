@@ -5,7 +5,7 @@
   "version": "1.0.0",
   "name": "Permission Audit",
   "description": "Find all permissions a user or group has across the collection, with links to where each is granted.",
-  "categories": ["Azure Boards"],
+  "categories": ["Other"],
   "targets": [{ "id": "Microsoft.TeamFoundation.Server", "version": "[17.0,)" }],
   "icons": { "default": "images/icon.png" },
   "scopes": ["vso.identity", "vso.security_manage", "vso.project", "vso.code", "vso.build", "vso.release", "vso.wiki"],
