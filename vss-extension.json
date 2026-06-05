@@ -1,0 +1,21 @@
+{
+  "manifestVersion": 1,
+  "id": "azpermission-helper",
+  "publisher": "local",
+  "version": "1.0.0",
+  "name": "Permission Audit",
+  "description": "Find all permissions a user or group has across the collection, with links to where each is granted.",
+  "categories": ["Azure Boards"],
+  "targets": [{ "id": "Microsoft.TeamFoundation.Server", "version": "[17.0,)" }],
+  "icons": { "default": "images/icon.png" },
+  "scopes": ["vso.identity", "vso.security_manage", "vso.project", "vso.code", "vso.build", "vso.release", "vso.wiki"],
+  "contributions": [
+    {
+      "id": "permission-audit-hub",
+      "type": "ms.vss-web.hub",
+      "targets": ["ms.vss-admin-web.collection-admin-hub-group"],
+      "properties": { "name": "Permission Audit", "uri": "dist/hub.html" }
+    }
+  ],
+  "files": [{ "path": "dist", "addressable": true }]
+}
