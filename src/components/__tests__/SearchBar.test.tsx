@@ -42,4 +42,29 @@ describe('SearchBar', () => {
     expect(onSelect).toHaveBeenCalledWith(identities[0]);
     expect(screen.queryByText('[Proj]\\Team')).toBeNull();
   });
+
+  it('ignores stale results from an older slower search', async () => {
+    let resolveFirst!: (v: Identity[]) => void;
+    const search = jest
+      .fn()
+      .mockImplementationOnce(() => new Promise<Identity[]>((r) => { resolveFirst = r; }))
+      .mockImplementationOnce(() => Promise.resolve([identities[1]]));
+    render(<SearchBar search={search} onSelect={jest.fn()} />);
+    const input = screen.getByPlaceholderText(/search user or group/i);
+    fireEvent.change(input, { target: { value: 'john' } });
+    await act(async () => { jest.advanceTimersByTime(300); });
+    fireEvent.change(input, { target: { value: 'team' } });
+    await act(async () => { jest.advanceTimersByTime(300); });
+    await act(async () => { resolveFirst(identities); }); // old response arrives last
+    expect(screen.queryByText('John Doe')).toBeNull(); // stale result ignored
+    expect(screen.getByText('[Proj]\\Team')).toBeTruthy();
+  });
+
+  it('clears suggestions when search rejects', async () => {
+    const search = jest.fn().mockRejectedValue(new Error('network'));
+    render(<SearchBar search={search} onSelect={jest.fn()} />);
+    fireEvent.change(screen.getByPlaceholderText(/search user or group/i), { target: { value: 'john' } });
+    await act(async () => { jest.advanceTimersByTime(300); });
+    expect(screen.queryByRole('listbox')).toBeNull();
+  });
 });

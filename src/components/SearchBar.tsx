@@ -12,6 +12,7 @@ export function SearchBar({ search, onSelect }: SearchBarProps): JSX.Element {
   const [suggestions, setSuggestions] = useState<Identity[]>([]);
   const timer = useRef<ReturnType<typeof setTimeout>>();
   const skipNextSearch = useRef(false);
+  const requestId = useRef(0);
 
   useEffect(() => {
     if (timer.current) clearTimeout(timer.current);
@@ -24,10 +25,12 @@ export function SearchBar({ search, onSelect }: SearchBarProps): JSX.Element {
       return;
     }
     timer.current = setTimeout(async () => {
+      const id = ++requestId.current;
       try {
-        setSuggestions(await search(query));
+        const result = await search(query);
+        if (id === requestId.current) setSuggestions(result);
       } catch {
-        setSuggestions([]);
+        if (id === requestId.current) setSuggestions([]);
       }
     }, 300);
     return () => {
@@ -38,15 +41,20 @@ export function SearchBar({ search, onSelect }: SearchBarProps): JSX.Element {
   return (
     <div className="search-bar">
       <input
+        role="combobox"
+        aria-label="Search user or group"
+        aria-expanded={suggestions.length > 0}
         placeholder="Search user or group..."
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />
       {suggestions.length > 0 && (
-        <ul className="suggestions">
+        <ul className="suggestions" role="listbox">
           {suggestions.map((s) => (
             <li
               key={s.descriptor}
+              role="option"
+              aria-selected={false}
               onClick={() => {
                 onSelect(s);
                 skipNextSearch.current = true;
