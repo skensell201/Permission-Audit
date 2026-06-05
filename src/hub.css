@@ -7,7 +7,10 @@ body { font-family: "Segoe UI", sans-serif; margin: 16px; color: #201f1e; }
 .badge { font-size: 10px; font-weight: 600; padding: 1px 5px; border-radius: 3px; margin-right: 8px; }
 .badge-user { background: #0078d4; color: #fff; }
 .badge-group { background: #8764b8; color: #fff; }
-.toolbar { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 12px; }
+.toolbar { display: flex; gap: 8px; align-items: stretch; margin-bottom: 12px; }
+.toolbar button { padding: 6px 14px; box-sizing: border-box; cursor: pointer; }
+.toolbar button:disabled { cursor: default; }
+.export { display: flex; }
 .filters { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
 .summary { display: flex; gap: 16px; background: #f3f2f1; padding: 8px 12px; border-radius: 4px; margin-bottom: 12px; font-size: 13px; }
 .summary .deny-count { color: #a4262c; font-weight: 600; }

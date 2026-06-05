@@ -67,4 +67,17 @@ describe('SearchBar', () => {
     await act(async () => { jest.advanceTimersByTime(300); });
     expect(screen.queryByRole('listbox')).toBeNull();
   });
+
+  it('fires onClear when the user edits the query after selecting', async () => {
+    const onClear = jest.fn();
+    const search = jest.fn().mockResolvedValue(identities);
+    render(<SearchBar search={search} onSelect={jest.fn()} onClear={onClear} />);
+    const input = screen.getByPlaceholderText(/search user or group/i);
+    fireEvent.change(input, { target: { value: 'john' } });
+    await act(async () => { jest.advanceTimersByTime(300); });
+    fireEvent.click(await screen.findByText('John Doe'));
+    onClear.mockClear(); // typing before selection also clears — irrelevant here
+    fireEvent.change(input, { target: { value: 'John Doex' } });
+    expect(onClear).toHaveBeenCalled();
+  });
 });

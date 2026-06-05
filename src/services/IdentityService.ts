@@ -3,7 +3,8 @@ import { Identity } from '../models/PermissionNode';
 
 interface RawIdentity {
   descriptor: string;
-  providerDisplayName: string;
+  providerDisplayName?: string;
+  customDisplayName?: string;
   isContainer: boolean;
   memberOf?: string[];
 }
@@ -13,7 +14,12 @@ interface IdentityListResponse {
 }
 
 function toIdentity(raw: RawIdentity): Identity {
-  return { descriptor: raw.descriptor, displayName: raw.providerDisplayName, isGroup: raw.isContainer };
+  return {
+    descriptor: raw.descriptor,
+    // On-prem identities sometimes lack providerDisplayName — fall back.
+    displayName: raw.providerDisplayName ?? raw.customDisplayName ?? raw.descriptor,
+    isGroup: raw.isContainer,
+  };
 }
 
 export class IdentityService {

@@ -33,6 +33,23 @@ describe('IdentityService.search', () => {
       { descriptor: 'g1', displayName: '[Proj]\\John Team', isGroup: true },
     ]);
   });
+
+  it('falls back to customDisplayName, then descriptor, when providerDisplayName is missing', async () => {
+    const api = fakeApi([
+      [
+        'filterValue=x',
+        {
+          value: [
+            { descriptor: 'g2', customDisplayName: 'Custom Group', isContainer: true },
+            { descriptor: 'g3', isContainer: true },
+          ],
+        },
+      ],
+    ]);
+    const svc = new IdentityService(api);
+    const found = await svc.search('x');
+    expect(found.map((i) => i.displayName)).toEqual(['Custom Group', 'g3']);
+  });
 });
 
 describe('IdentityService.expandMembership', () => {

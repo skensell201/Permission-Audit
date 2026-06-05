@@ -33,6 +33,7 @@ function App({ services }: { services: Services }): JSX.Element {
   const [progress, setProgress] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
+  const [auditedName, setAuditedName] = useState<string | null>(null);
 
   async function runAudit(): Promise<void> {
     if (!target) return;
@@ -43,6 +44,7 @@ function App({ services }: { services: Services }): JSX.Element {
       const result = await services.audit.run(target, (p) => setProgress(p.step));
       setEntries(result.entries);
       setWarnings(result.warnings);
+      setAuditedName(target.displayName);
     } catch (e) {
       if (e instanceof ApiError && (e.status === 401 || e.status === 403)) {
         setError('You need Project Collection Administrator permissions to use this tool.');
@@ -62,6 +64,7 @@ function App({ services }: { services: Services }): JSX.Element {
   );
   const summary = useMemo(() => (hasResults ? summarize(filtered) : null), [hasResults, filtered]);
   const searchIdentities = useCallback((q: string) => services.identities.search(q), [services.identities]);
+  const clearTarget = useCallback(() => setTarget(null), []);
   const namespaces = useMemo(() => [...new Set((entries ?? []).map((e) => e.namespaceName))].sort(), [entries]);
   const projects = useMemo(
     () => [...new Set((entries ?? []).map((e) => e.projectName).filter((p): p is string => p !== null))].sort(),
@@ -72,7 +75,7 @@ function App({ services }: { services: Services }): JSX.Element {
     <div>
       <h2>Permission Audit</h2>
       <div className="toolbar">
-        <SearchBar search={searchIdentities} onSelect={setTarget} />
+        <SearchBar search={searchIdentities} onSelect={setTarget} onClear={clearTarget} />
         <button disabled={!target || progress !== null} onClick={runAudit}>
           Find permissions
         </button>
@@ -93,6 +96,7 @@ function App({ services }: { services: Services }): JSX.Element {
       {entries && summary && (
         <>
           <div className="summary">
+            {auditedName && <span>Results for: <b>{auditedName}</b></span>}
             <span>Found: <b>{summary.total} permissions</b></span>
             <span>Projects: <b>{summary.projects}</b></span>
             <span>Direct: <b>{summary.direct}</b></span>

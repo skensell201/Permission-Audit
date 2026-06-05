@@ -2,7 +2,7 @@
   "manifestVersion": 1,
   "id": "azpermission-helper",
   "publisher": "local",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "name": "Permission Audit",
   "description": "Find all permissions a user or group has across the collection, with links to where each is granted.",
   "categories": ["Other"],

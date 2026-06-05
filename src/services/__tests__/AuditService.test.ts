@@ -28,7 +28,19 @@ const catalogs: Catalogs = {
   wikis: new Map(),
 };
 
-function makeService(): AuditService {
+interface TestAce {
+  token: string;
+  descriptor: string;
+  allow: number;
+  deny: number;
+}
+
+const DEFAULT_ACES: TestAce[] = [
+  { token: 'repoV2/p1/r1', descriptor: 'u1', allow: 2, deny: 0 },
+  { token: 'repoV2/p1/r1', descriptor: 'gA', allow: 4, deny: 8 },
+];
+
+function makeService(aces: TestAce[] = DEFAULT_ACES): AuditService {
   const identities = {
     expandMembership: jest.fn().mockResolvedValue([user, groupA]),
   } as unknown as IdentityService;
@@ -36,10 +48,7 @@ function makeService(): AuditService {
     getNamespaces: jest.fn().mockResolvedValue([GIT_NS, BROKEN_NS]),
     getAcesForDescriptors: jest.fn().mockImplementation((ns: SecurityNamespace) => {
       if (ns.namespaceId === 'ns-broken') return Promise.reject(new Error('boom'));
-      return Promise.resolve([
-        { token: 'repoV2/p1/r1', descriptor: 'u1', allow: 2, deny: 0 },
-        { token: 'repoV2/p1/r1', descriptor: 'gA', allow: 4, deny: 8 },
-      ]);
+      return Promise.resolve(aces);
     }),
     decodeBits: new PermissionService(null as never).decodeBits,
   } as unknown as PermissionService;
@@ -77,5 +86,22 @@ describe('AuditService.run', () => {
     const result = await makeService().run(groupA, () => undefined);
     const gaRows = result.entries.filter((e) => e.source === 'direct');
     expect(gaRows.map((e) => e.actionName).sort()).toEqual(['Contribute', 'Force push']);
+  });
+
+  it('ignores ACEs whose descriptor is not in the expanded identity set', async () => {
+    // The server may ignore the descriptors filter and return full ACLs.
+    const svc = makeService([
+      { token: 'repoV2/p1/r1', descriptor: 'u1', allow: 2, deny: 0 },
+      { token: 'repoV2/p1/r1', descriptor: 'someone-else', allow: 4, deny: 8 },
+    ]);
+    const result = await svc.run(user, () => undefined);
+    expect(result.entries.map((e) => e.actionName)).toEqual(['Read']);
+  });
+
+  it('matches ACE descriptors case-insensitively for source attribution', async () => {
+    const svc = makeService([{ token: 'repoV2/p1/r1', descriptor: 'U1', allow: 2, deny: 0 }]);
+    const result = await svc.run(user, () => undefined);
+    expect(result.entries).toHaveLength(1);
+    expect(result.entries[0].source).toBe('direct');
   });
 });

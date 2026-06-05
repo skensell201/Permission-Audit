@@ -5,9 +5,11 @@ import { Identity } from '../models/PermissionNode';
 export interface SearchBarProps {
   search: (query: string) => Promise<Identity[]>;
   onSelect: (identity: Identity) => void;
+  /** Fired whenever the user edits the query — any previous selection is no longer valid. */
+  onClear?: () => void;
 }
 
-export function SearchBar({ search, onSelect }: SearchBarProps): JSX.Element {
+export function SearchBar({ search, onSelect, onClear }: SearchBarProps): JSX.Element {
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState<Identity[]>([]);
   const timer = useRef<ReturnType<typeof setTimeout>>();
@@ -46,7 +48,10 @@ export function SearchBar({ search, onSelect }: SearchBarProps): JSX.Element {
         aria-expanded={suggestions.length > 0}
         placeholder="Search user or group..."
         value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          onClear?.();
+        }}
       />
       {suggestions.length > 0 && (
         <ul className="suggestions" role="listbox">

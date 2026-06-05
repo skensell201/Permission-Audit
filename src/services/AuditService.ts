@@ -31,7 +31,12 @@ export class AuditService {
   async run(target: Identity, onProgress: (p: AuditProgress) => void): Promise<AuditResult> {
     onProgress({ step: 'Resolving identity and groups...' });
     const expanded = await this.identities.expandMembership(target);
-    const nameByDescriptor = new Map<string, string>(expanded.map((i) => [i.descriptor, i.displayName]));
+    // Descriptor comparisons are case-insensitive: the ACL API may return a
+    // different casing than the Identities API.
+    const nameByDescriptor = new Map<string, string>(
+      expanded.map((i) => [i.descriptor.toLowerCase(), i.displayName])
+    );
+    const targetDescriptor = target.descriptor.toLowerCase();
     const descriptors = expanded.map((i) => i.descriptor);
 
     onProgress({ step: 'Loading security namespaces...' });
@@ -48,11 +53,15 @@ export class AuditService {
       try {
         const aces = await this.perms.getAcesForDescriptors(ns, descriptors);
         for (const ace of aces) {
+          const aceDescriptor = ace.descriptor.toLowerCase();
+          // The server may ignore the descriptors filter and return full ACLs —
+          // skip ACEs that belong to identities outside the expanded set.
+          if (!nameByDescriptor.has(aceDescriptor)) continue;
           const resolved = resolveToken(ns.name, ace.token, catalogs, this.baseUrl);
           const source =
-            ace.descriptor === target.descriptor
+            aceDescriptor === targetDescriptor
               ? 'direct'
-              : `via ${nameByDescriptor.get(ace.descriptor) ?? ace.descriptor}`;
+              : `via ${nameByDescriptor.get(aceDescriptor) ?? ace.descriptor}`;
           for (const actionName of this.perms.decodeBits(ns, ace.allow)) {
             entries.push({ ...resolved, namespaceName: ns.name, actionName, allow: true, source, token: ace.token });
           }
