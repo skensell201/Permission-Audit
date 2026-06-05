@@ -38,6 +38,7 @@ function App({ services }: { services: Services }): JSX.Element {
     if (!target) return;
     setError(null);
     setEntries(null);
+    setWarnings([]);
     try {
       const result = await services.audit.run(target, (p) => setProgress(p.step));
       setEntries(result.entries);
@@ -54,11 +55,12 @@ function App({ services }: { services: Services }): JSX.Element {
   }
 
   const filtered = useMemo(() => (entries ? applyFilters(entries, filters) : []), [entries, filters]);
+  const hasResults = entries !== null;
   const tree = useMemo(
-    () => (entries ? buildTree(services.collectionName, filtered) : null),
-    [entries, filtered, services.collectionName]
+    () => (hasResults ? buildTree(services.collectionName, filtered) : null),
+    [hasResults, filtered, services.collectionName]
   );
-  const summary = entries ? summarize(filtered) : null;
+  const summary = useMemo(() => (hasResults ? summarize(filtered) : null), [hasResults, filtered]);
   const namespaces = useMemo(() => [...new Set((entries ?? []).map((e) => e.namespaceName))].sort(), [entries]);
   const projects = useMemo(
     () => [...new Set((entries ?? []).map((e) => e.projectName).filter((p): p is string => p !== null))].sort(),
@@ -81,8 +83,8 @@ function App({ services }: { services: Services }): JSX.Element {
 
       {warnings.length > 0 && (
         <div className="warnings">
-          {warnings.map((w) => (
-            <div key={w.area}>&#9888; {w.area}: {w.message}</div>
+          {warnings.map((w, i) => (
+            <div key={`${w.area}-${i}`}>&#9888; {w.area}: {w.message}</div>
           ))}
         </div>
       )}
@@ -139,4 +141,10 @@ async function start(): Promise<void> {
   ReactDOM.render(<App services={{ identities, audit, collectionName }} />, document.getElementById('root'));
 }
 
-start();
+start().catch((e) => {
+  const root = document.getElementById('root');
+  if (root) {
+    root.textContent = `Failed to initialize Permission Audit: ${e instanceof Error ? e.message : String(e)}`;
+    root.className = 'error-box';
+  }
+});
