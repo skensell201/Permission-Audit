@@ -3,6 +3,11 @@ import { PermissionEntry } from '../models/PermissionNode';
 
 const HEADER = ['Project', 'Resource Type', 'Resource', 'Namespace', 'Permission', 'Effect', 'Source', 'Link'];
 
+/** Excel treats cells starting with = + - @ as formulas even in CSV; prefix with ' to force text. */
+function deFormula(value: string): string {
+  return /^[=+\-@]/.test(value) ? `'${value}` : value;
+}
+
 function toRow(e: PermissionEntry): string[] {
   return [
     e.projectName ?? '(collection)',
@@ -13,7 +18,7 @@ function toRow(e: PermissionEntry): string[] {
     e.allow ? 'Allow' : 'Deny',
     e.source,
     e.securityUrl,
-  ];
+  ].map(deFormula);
 }
 
 function csvCell(value: string): string {

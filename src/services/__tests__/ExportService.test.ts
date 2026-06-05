@@ -52,3 +52,29 @@ describe('toXlsxBlob', () => {
     expect((rows[0] as Record<string, unknown>).Permission).toBe('Read');
   });
 });
+
+describe('formula injection hardening', () => {
+  const hostile: PermissionEntry[] = [
+    { ...entries[0], resourceName: '=HYPERLINK("http://evil")' },
+    { ...entries[0], resourceName: '+1+1' },
+    { ...entries[0], resourceName: '-2+5' },
+    { ...entries[0], resourceName: '@SUM(A1)' },
+  ];
+
+  it('neutralizes formula-leading cells in CSV', () => {
+    const lines = toCsv(hostile).trim().split('\n').slice(1);
+    for (const line of lines) {
+      const resourceCell = line.split(',')[2];
+      expect(resourceCell.replace(/^"/, '').startsWith("'")).toBe(true);
+    }
+  });
+
+  it('neutralizes formula-leading cells in XLSX rows', async () => {
+    const blob = toXlsxBlob(hostile);
+    const wb = XLSX.read(await blob.arrayBuffer(), { type: 'array' });
+    const rows = XLSX.utils.sheet_to_json<Record<string, string>>(wb.Sheets[wb.SheetNames[0]]);
+    for (const row of rows) {
+      expect(row.Resource.startsWith("'")).toBe(true);
+    }
+  });
+});
