@@ -39,6 +39,8 @@ export class AuditService {
 
     const catalogs = await this.resources.loadCatalogs((msg) => onProgress({ step: msg }));
 
+    // Mutated from concurrent runBatched lanes — safe: Array.push is synchronous
+    // and there is no await between reading shared state and pushing.
     const entries: PermissionEntry[] = [];
     const warnings: AuditWarning[] = [];
     let done = 0;

@@ -72,4 +72,10 @@ describe('AuditService.run', () => {
     await makeService().run(user, (p) => seen.push(p.step));
     expect(seen.some((s) => s.startsWith('Loading ACLs'))).toBe(true);
   });
+
+  it("attributes 'direct' when the target itself is a group", async () => {
+    const result = await makeService().run(groupA, () => undefined);
+    const gaRows = result.entries.filter((e) => e.source === 'direct');
+    expect(gaRows.map((e) => e.actionName).sort()).toEqual(['Contribute', 'Force push']);
+  });
 });
