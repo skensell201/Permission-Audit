@@ -142,10 +142,24 @@ async function start(): Promise<void> {
   ReactDOM.render(<App services={{ identities, audit, collectionName }} />, document.getElementById('root'));
 }
 
+function describeError(e: unknown): string {
+  if (e instanceof Error) return e.stack ?? e.message;
+  if (typeof e === 'object' && e !== null) {
+    try {
+      return JSON.stringify(e, Object.getOwnPropertyNames(e), 2);
+    } catch {
+      /* fall through */
+    }
+  }
+  return String(e);
+}
+
 start().catch((e) => {
+  // eslint-disable-next-line no-console
+  console.error('Permission Audit init failed:', e);
   const root = document.getElementById('root');
   if (root) {
-    root.textContent = `Failed to initialize Permission Audit: ${e instanceof Error ? e.message : String(e)}`;
+    root.textContent = `Failed to initialize Permission Audit: ${describeError(e)}`;
     root.className = 'error-box';
   }
 });
