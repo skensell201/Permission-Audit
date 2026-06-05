@@ -29,14 +29,14 @@ export function buildTree(collectionName: string, entries: PermissionEntry[]): T
       project = { id: `p:${e.projectName}`, label: e.projectName, kind: 'project', children: [], permissions: [] };
       projectNodes.set(e.projectName, project);
     }
-    const typeKey = `${e.projectName} ${e.resourceType}`;
+    const typeKey = `${e.projectName}\0${e.resourceType}`;
     let typeNode = typeNodes.get(typeKey);
     if (!typeNode) {
       typeNode = { id: `t:${typeKey}`, label: TYPE_LABELS[e.resourceType], kind: 'resourceType', children: [], permissions: [] };
       typeNodes.set(typeKey, typeNode);
       project.children.push(typeNode);
     }
-    const resKey = `${typeKey} ${e.resourceName}`;
+    const resKey = `${typeKey}\0${e.resourceName}`;
     let resNode = resourceNodes.get(resKey);
     if (!resNode) {
       resNode = { id: `r:${resKey}`, label: e.resourceName, kind: 'resource', children: [], permissions: [] };
