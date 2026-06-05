@@ -38,4 +38,17 @@ describe('ResourceService.loadCatalogs', () => {
     const c = await svc.loadCatalogs(() => undefined);
     expect(c.wikis.size).toBe(0);
   });
+
+  it('still loads wikis when build definitions fail for the same project', async () => {
+    const api = fakeApi([
+      ['/_apis/projects', { value: [{ id: 'p1', name: 'ProjectAlpha' }] }],
+      ['/_apis/git/repositories', { value: [] }],
+      // no build route -> rejects
+      ['/ProjectAlpha/_apis/wiki/wikis', { value: [{ id: 'w1', name: 'Alpha Wiki' }] }],
+    ]);
+    const svc = new ResourceService(api);
+    const c = await svc.loadCatalogs(() => undefined);
+    expect(c.buildDefs.size).toBe(0);
+    expect(c.wikis.get('w1')).toEqual({ name: 'Alpha Wiki', projectId: 'p1' });
+  });
 });
