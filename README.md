@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/logo.png" alt="Permission Audit" width="160"/>
+</p>
+
 # Permission Audit — Azure DevOps Server 2022 extension
 
 Finds **all permissions** a user or group has across a collection — direct and
