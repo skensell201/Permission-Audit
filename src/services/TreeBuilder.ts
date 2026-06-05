@@ -10,6 +10,9 @@ const TYPE_LABELS: Record<ResourceType, string> = {
   other: 'Other',
 };
 
+/**
+ * Groups flat permission entries into Collection → Project → Resource type → Resource.
+ */
 export function buildTree(collectionName: string, entries: PermissionEntry[]): TreeNode {
   const root: TreeNode = { id: 'root', label: collectionName, kind: 'collection', children: [], permissions: [] };
   const projectNodes = new Map<string, TreeNode>();
@@ -26,14 +29,14 @@ export function buildTree(collectionName: string, entries: PermissionEntry[]): T
       project = { id: `p:${e.projectName}`, label: e.projectName, kind: 'project', children: [], permissions: [] };
       projectNodes.set(e.projectName, project);
     }
-    const typeKey = `${e.projectName}|${e.resourceType}`;
+    const typeKey = `${e.projectName} ${e.resourceType}`;
     let typeNode = typeNodes.get(typeKey);
     if (!typeNode) {
       typeNode = { id: `t:${typeKey}`, label: TYPE_LABELS[e.resourceType], kind: 'resourceType', children: [], permissions: [] };
       typeNodes.set(typeKey, typeNode);
       project.children.push(typeNode);
     }
-    const resKey = `${typeKey}|${e.resourceName}`;
+    const resKey = `${typeKey} ${e.resourceName}`;
     let resNode = resourceNodes.get(resKey);
     if (!resNode) {
       resNode = { id: `r:${resKey}`, label: e.resourceName, kind: 'resource', children: [], permissions: [] };
@@ -44,6 +47,9 @@ export function buildTree(collectionName: string, entries: PermissionEntry[]): T
   }
 
   root.children = [...projectNodes.values()].sort((a, b) => a.label.localeCompare(b.label));
-  for (const p of root.children) p.children.sort((a, b) => a.label.localeCompare(b.label));
+  for (const p of root.children) {
+    p.children.sort((a, b) => a.label.localeCompare(b.label));
+    for (const t of p.children) t.children.sort((a, b) => a.label.localeCompare(b.label));
+  }
   return root;
 }

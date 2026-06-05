@@ -40,4 +40,13 @@ describe('buildTree', () => {
     expect(root.permissions).toHaveLength(1);
     expect(root.children).toHaveLength(0);
   });
+
+  it('sorts resources alphabetically within a resource type', () => {
+    const root = buildTree('DefaultCollection', [
+      entry({ resourceName: 'zeta-repo' }),
+      entry({ resourceName: 'alpha-repo' }),
+    ]);
+    const repos = root.children[0].children[0];
+    expect(repos.children.map((r) => r.label)).toEqual(['alpha-repo', 'zeta-repo']);
+  });
 });
