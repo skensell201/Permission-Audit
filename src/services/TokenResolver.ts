@@ -21,6 +21,14 @@ export interface ResolvedToken {
 
 export function resolveToken(nsName: string, token: string, c: Catalogs, baseUrl: string): ResolvedToken {
   if (nsName === 'Git Repositories') {
+    if (token === 'repoV2') {
+      return {
+        resourceName: 'All repositories',
+        resourceType: 'repository',
+        projectName: null,
+        securityUrl: `${baseUrl}/_settings/repositories`,
+      };
+    }
     const m = token.match(/^repoV2\/([^/]+)(?:\/([^/]+))?/);
     if (m) {
       const projectName = c.projects.get(m[1]) ?? m[1];
@@ -29,14 +37,14 @@ export function resolveToken(nsName: string, token: string, c: Catalogs, baseUrl
           resourceName: c.repos.get(m[2])!.name,
           resourceType: 'repository',
           projectName,
-          securityUrl: `${baseUrl}/${projectName}/_settings/repositories?repo=${m[2]}&action=security`,
+          securityUrl: `${baseUrl}/${encodeURIComponent(projectName)}/_settings/repositories?repo=${m[2]}&action=security`,
         };
       }
       return {
         resourceName: `All repositories in ${projectName}`,
         resourceType: 'repository',
         projectName,
-        securityUrl: `${baseUrl}/${projectName}/_settings/repositories`,
+        securityUrl: `${baseUrl}/${encodeURIComponent(projectName)}/_settings/repositories`,
       };
     }
   }
@@ -49,7 +57,7 @@ export function resolveToken(nsName: string, token: string, c: Catalogs, baseUrl
         resourceName: projectName,
         resourceType: 'project',
         projectName,
-        securityUrl: `${baseUrl}/${projectName}/_settings/permissions`,
+        securityUrl: `${baseUrl}/${encodeURIComponent(projectName)}/_settings/permissions`,
       };
     }
   }
@@ -64,14 +72,14 @@ export function resolveToken(nsName: string, token: string, c: Catalogs, baseUrl
           resourceName: def.name,
           resourceType: 'pipeline',
           projectName,
-          securityUrl: `${baseUrl}/${projectName}/_build/definition?id=${m[2]}&view=security`,
+          securityUrl: `${baseUrl}/${encodeURIComponent(projectName)}/_build/definition?id=${m[2]}&view=security`,
         };
       }
       return {
         resourceName: `All pipelines in ${projectName}`,
         resourceType: 'pipeline',
         projectName,
-        securityUrl: `${baseUrl}/${projectName}/_settings/permissions`,
+        securityUrl: `${baseUrl}/${encodeURIComponent(projectName)}/_settings/permissions`,
       };
     }
   }
@@ -84,7 +92,7 @@ export function resolveToken(nsName: string, token: string, c: Catalogs, baseUrl
         resourceName: c.wikis.get(m[2])!.name,
         resourceType: 'wiki',
         projectName,
-        securityUrl: `${baseUrl}/${projectName}/_settings/permissions`,
+        securityUrl: `${baseUrl}/${encodeURIComponent(projectName)}/_settings/permissions`,
       };
     }
   }
@@ -96,7 +104,7 @@ export function resolveToken(nsName: string, token: string, c: Catalogs, baseUrl
         resourceName: token,
         resourceType: nsName === 'CSS' || nsName === 'Iteration' ? 'areaPath' : 'other',
         projectName,
-        securityUrl: `${baseUrl}/${projectName}/_settings/permissions`,
+        securityUrl: `${baseUrl}/${encodeURIComponent(projectName)}/_settings/permissions`,
       };
     }
   }

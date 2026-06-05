@@ -64,4 +64,25 @@ describe('resolveToken', () => {
       securityUrl: `${BASE}/ProjectAlpha/_settings/permissions`,
     });
   });
+
+  it('URL-encodes project names with spaces in security links', () => {
+    const c: Catalogs = {
+      projects: new Map([['p2', 'My Project']]),
+      repos: new Map([['r2', { name: 'repo-x', projectId: 'p2' }]]),
+      buildDefs: new Map(),
+      wikis: new Map(),
+    };
+    expect(resolveToken('Git Repositories', 'repoV2/p2/r2', c, BASE).securityUrl).toBe(
+      `${BASE}/My%20Project/_settings/repositories?repo=r2&action=security`
+    );
+  });
+
+  it('resolves a bare repoV2 token to collection-wide repositories', () => {
+    expect(resolveToken('Git Repositories', 'repoV2', catalogs, BASE)).toEqual({
+      resourceName: 'All repositories',
+      resourceType: 'repository',
+      projectName: null,
+      securityUrl: `${BASE}/_settings/repositories`,
+    });
+  });
 });
