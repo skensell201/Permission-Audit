@@ -66,4 +66,33 @@ describe('IdentityService.expandMembership', () => {
     const all = await svc.expandMembership({ descriptor: 'u1', displayName: 'John', isGroup: false });
     expect(all.map((i: Identity) => i.descriptor).sort()).toEqual(['gA', 'gB', 'u1']);
   });
+
+  it('chunks descriptor queries so a user in many groups never overflows the URL (404/414)', async () => {
+    const groups = Array.from({ length: 25 }, (_, i) => `g${i}`);
+    const calls: string[] = [];
+    const descriptorsOf = (path: string): string[] =>
+      (path.match(/descriptors=([^&]+)/)?.[1] ?? '').split(',').filter(Boolean);
+    const api: ApiClient = {
+      get: <T>(path: string): Promise<T> => {
+        calls.push(path);
+        const direct = path.includes('queryMembership=Direct');
+        return Promise.resolve({
+          value: descriptorsOf(path).map((d) => ({
+            descriptor: d,
+            providerDisplayName: d,
+            isContainer: d !== 'u1',
+            memberOf: direct && d === 'u1' ? groups : [],
+          })),
+        } as T);
+      },
+    };
+    const svc = new IdentityService(api);
+    const all = await svc.expandMembership({ descriptor: 'u1', displayName: 'u1', isGroup: false });
+
+    expect(all.map((i: Identity) => i.descriptor).sort()).toEqual(['u1', ...groups].sort());
+    // No single request may carry more than 20 descriptors, or the server returns 404/414.
+    for (const path of calls) {
+      expect(descriptorsOf(path).length).toBeLessThanOrEqual(20);
+    }
+  });
 });

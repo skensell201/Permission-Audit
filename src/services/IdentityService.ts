@@ -22,8 +22,24 @@ function toIdentity(raw: RawIdentity): Identity {
   };
 }
 
+/** descriptors are passed in the query string; too many at once overflow the URL → HTTP 404/414. */
+const DESCRIPTOR_CHUNK = 20;
+
 export class IdentityService {
   constructor(private api: ApiClient) {}
+
+  /** Look up identities by descriptor, chunked so the query string never overflows. */
+  private async getByDescriptors(descriptors: string[], extraQuery = ''): Promise<RawIdentity[]> {
+    const out: RawIdentity[] = [];
+    for (let i = 0; i < descriptors.length; i += DESCRIPTOR_CHUNK) {
+      const chunk = descriptors.slice(i, i + DESCRIPTOR_CHUNK);
+      const res = await this.api.get<IdentityListResponse>(
+        `/_apis/identities?descriptors=${chunk.map(encodeURIComponent).join(',')}${extraQuery}&api-version=6.0`
+      );
+      out.push(...res.value);
+    }
+    return out;
+  }
 
   /** Fuzzy search over users and groups in the collection. */
   async search(query: string): Promise<Identity[]> {
@@ -39,11 +55,9 @@ export class IdentityService {
     const seen = new Set<string>([identity.descriptor]);
     let frontier = [identity.descriptor];
     while (frontier.length > 0) {
-      const res = await this.api.get<IdentityListResponse>(
-        `/_apis/identities?descriptors=${frontier.map(encodeURIComponent).join(',')}&queryMembership=Direct&api-version=6.0`
-      );
+      const raws = await this.getByDescriptors(frontier, '&queryMembership=Direct');
       const next: string[] = [];
-      for (const raw of res.value) {
+      for (const raw of raws) {
         for (const parent of raw.memberOf ?? []) {
           if (!seen.has(parent)) {
             seen.add(parent);
@@ -52,10 +66,8 @@ export class IdentityService {
         }
       }
       if (next.length > 0) {
-        const parents = await this.api.get<IdentityListResponse>(
-          `/_apis/identities?descriptors=${next.map(encodeURIComponent).join(',')}&api-version=6.0`
-        );
-        result.push(...parents.value.map(toIdentity));
+        const parents = await this.getByDescriptors(next);
+        result.push(...parents.map(toIdentity));
       }
       frontier = next;
     }

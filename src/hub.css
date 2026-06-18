@@ -1,9 +1,17 @@
-body { font-family: "Segoe UI", sans-serif; margin: 16px; color: #201f1e; }
+/* Colors follow the Azure DevOps theme via CSS variables, with light-theme fallbacks,
+   so text stays legible in both light and dark themes. */
+body { font-family: "Segoe UI", sans-serif; margin: 16px; color: var(--text-primary-color, #201f1e); }
 .search-bar { position: relative; display: inline-block; width: 420px; }
 .search-bar input { width: 100%; padding: 6px 10px; box-sizing: border-box; }
-.suggestions { position: absolute; z-index: 10; left: 0; right: 0; margin: 2px 0 0; padding: 0; list-style: none; background: #fff; border: 1px solid #ccc; max-height: 280px; overflow-y: auto; }
+/* Form controls: theme-aware text/background so what you type is visible in dark mode. */
+.search-bar input, .filters input[type="text"], .filters select {
+  color: var(--text-primary-color, #201f1e);
+  background: var(--callout-background-color, #fff);
+  border: 1px solid var(--palette-black-alpha-20, #ccc);
+}
+.suggestions { position: absolute; z-index: 10; left: 0; right: 0; margin: 2px 0 0; padding: 0; list-style: none; color: var(--text-primary-color, #201f1e); background: var(--callout-background-color, #fff); border: 1px solid var(--palette-black-alpha-20, #ccc); max-height: 280px; overflow-y: auto; }
 .suggestions li { padding: 6px 10px; cursor: pointer; }
-.suggestions li:hover { background: #f3f2f1; }
+.suggestions li:hover { background: var(--palette-neutral-4, #f3f2f1); }
 .badge { font-size: 10px; font-weight: 600; padding: 1px 5px; border-radius: 3px; margin-right: 8px; }
 .badge-user { background: #0078d4; color: #fff; }
 .badge-group { background: #8764b8; color: #fff; }
@@ -12,18 +20,19 @@ body { font-family: "Segoe UI", sans-serif; margin: 16px; color: #201f1e; }
 .toolbar button:disabled { cursor: default; }
 .export { display: flex; }
 .filters { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
-.summary { display: flex; gap: 16px; background: #f3f2f1; padding: 8px 12px; border-radius: 4px; margin-bottom: 12px; font-size: 13px; }
+/* These callouts keep a fixed light background, so pin their text dark regardless of theme. */
+.summary { display: flex; gap: 16px; color: #201f1e; background: #f3f2f1; padding: 8px 12px; border-radius: 4px; margin-bottom: 12px; font-size: 13px; }
 .summary .deny-count { color: #a4262c; font-weight: 600; }
-.progress { margin: 12px 0; color: #605e5c; }
-.warnings { background: #fff4ce; padding: 8px 12px; border-radius: 4px; margin-bottom: 12px; font-size: 13px; }
-.error-box { background: #fde7e9; padding: 12px; border-radius: 4px; }
+.progress { margin: 12px 0; color: var(--text-secondary-color, #605e5c); }
+.warnings { color: #201f1e; background: #fff4ce; padding: 8px 12px; border-radius: 4px; margin-bottom: 12px; font-size: 13px; }
+.error-box { color: #201f1e; background: #fde7e9; padding: 12px; border-radius: 4px; }
 .tree-node .node-label { cursor: pointer; padding: 2px 0; }
 .kind-project > .node-label { font-weight: 600; }
 .perm-row { padding: 1px 0 1px 24px; font-size: 13px; display: flex; gap: 8px; }
 .effect.allow { color: #107c10; }
 .effect.deny { color: #a4262c; }
-.source { color: #605e5c; }
+.source { color: var(--text-secondary-color, #605e5c); }
 .export { position: relative; }
-.export-menu { position: absolute; right: 0; margin: 2px 0 0; padding: 0; list-style: none; background: #fff; border: 1px solid #ccc; z-index: 10; }
+.export-menu { position: absolute; right: 0; margin: 2px 0 0; padding: 0; list-style: none; color: var(--text-primary-color, #201f1e); background: var(--callout-background-color, #fff); border: 1px solid var(--palette-black-alpha-20, #ccc); z-index: 10; }
 .export-menu li { padding: 6px 16px; cursor: pointer; white-space: nowrap; }
-.export-menu li:hover { background: #f3f2f1; }
+.export-menu li:hover { background: var(--palette-neutral-4, #f3f2f1); }
