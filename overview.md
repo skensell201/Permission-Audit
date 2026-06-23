@@ -36,3 +36,13 @@ Install it through the local collection gallery (`{server}/_gallery/manage`).
 - No project pagination past 1000 projects.
 - Area-path permission links resolve to the project level.
 - No keyboard navigation in the result tree or export menu.
+
+## Compatibility
+
+- Azure DevOps Server **2022** and **2020** (on-premises) — built and tested.
+- Loads on application version **17.0+** (`Microsoft.TeamFoundation.Server [17.0,)`), including Azure DevOps Server 2019.
+- Pure client-side (REST `api-version=6.0`, SDK-injected token); no server components.
+
+## Author
+
+By **iksoftware**.
