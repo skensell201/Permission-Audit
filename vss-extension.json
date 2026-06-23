@@ -1,7 +1,7 @@
 {
   "manifestVersion": 1,
   "id": "azpermission-helper",
-  "publisher": "local",
+  "publisher": "iksoftware",
   "version": "1.0.4",
   "name": "Permission Audit",
   "description": "Find all permissions a user or group has across the collection, with links to where each is granted.",
